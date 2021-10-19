@@ -1,31 +1,39 @@
 import React, { useEffect, useRef, useState } from "react";
-// import { useFrame } from "react-three-fiber";
-import { Mesh, Vector3, Matrix4, Box3, MeshBasicMaterial, Color } from "three";
+import { Material, Mesh, MeshStandardMaterial, Vector3, Color } from "three";
 import { Stats } from "@react-three/drei";
-import { gsap } from "gsap";
+import { gsap, Power4 } from "gsap";
 
 const allStars: Array<React.MutableRefObject<undefined>> = []
 
 const Star = ({ position, color }: { position: any, color: any }) => {
   const mesh = useRef();
-  const [hover, setHover] = useState(false);
+  let init = true
+  let mat: Material
+  // const [hover, setHover] = useState(false);
   const radius = parseFloat((Math.random() * (0.5 - 0.2) + 0.2).toFixed(4))
   allStars.push(mesh)
   useEffect(() => {
-    moveStar(mesh, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, radius).play()
+    if(init){
+      moveStar(mesh, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, radius).play()
+      init = false
+    }
   });
   return (
     <>
       <mesh position={position} ref={mesh}
-        onPointerOver={() => {
-          setHover(true);
+        onPointerOver={(e) => {
+          // setHover(true);
+          mat = ((e.eventObject as Mesh).material as MeshStandardMaterial).clone();
+          ((e.eventObject as Mesh).material as MeshStandardMaterial).color = new Color(0xff0000);
         }}
-        onPointerOut={() => {
-          setHover(false);
+        onPointerOut={(e) => {
+          // setHover(false);
+          ((e.eventObject as Mesh).material as MeshStandardMaterial).dispose();
+          (e.eventObject as Mesh).material = mat;
         }}
       >
         <sphereBufferGeometry attach='geometry' args={[radius, 15, 16]} />
-        <meshStandardMaterial attach='material' color={hover ? "red" : color} />
+        <meshStandardMaterial attach='material' color={"white"} />
       </mesh>
 
     </>
@@ -37,7 +45,8 @@ function moveStar(mesh: React.MutableRefObject<undefined>, x: number, y: number,
     x: x,
     y: y,
     z: z,
-    duration: 10,
+    duration: 10 / ((mesh.current! as Mesh).scale.x),
+    ease: Power4.easeOut,
     onUpdate: () => {
       if (isInsideBox(mesh, r)) {
         t.kill()
@@ -45,6 +54,7 @@ function moveStar(mesh: React.MutableRefObject<undefined>, x: number, y: number,
       }
     },
     onComplete: () => {
+      t.kill()
       moveStar(mesh, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, Math.floor(Math.random() * 20) - 10, r).play()
     }
   });
@@ -87,7 +97,7 @@ function Box({ position }: { position: Vector3 }) {
   return (
     <mesh castShadow position={position}>
       <boxBufferGeometry attach="geometry" args={[10, 10, 10]} />
-      <meshStandardMaterial attach="material" color="0xffffff" wireframe={true} />
+      <meshStandardMaterial attach="material" color="white" wireframe={true} />
     </mesh>
   );
 }
