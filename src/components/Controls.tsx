@@ -23,7 +23,7 @@ interface OrbitRef {
 }
 
 extend({ OrbitControls });
-
+//function for creating the orbit controls
 const Controls: React.FC<any> = (props) => {
   const ref = useRef<OrbitRef>(null);
   const { camera, gl } = useThree();

@@ -4,6 +4,7 @@ import Controls from './components/Controls';
 import Scene from './components/Scene';
 import './App.css';
 
+//main app that holds all components
 export default function App (){
   return(
     <Canvas>
